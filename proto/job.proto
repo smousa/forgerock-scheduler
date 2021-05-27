@@ -1,0 +1,46 @@
+syntax = "proto3";
+option go_package = "github.com/smousa/forgerock-scheduler/api";
+package api;
+
+// JobService receives and processes incoming job requests and returns the job
+// id
+service JobService {
+    // CreateJob creates a new job and adds it to the job queue
+    rpc CreateJob(CreateJobRequest) returns (CreateJobResponse);
+}
+
+// CreateJobRequest contains a collection of tasks to be executed
+message CreateJobRequest {
+    repeated Task tasks = 1;
+}
+
+// CreateJobResponse responds when the job has been enqueued and returns the
+// associated job id.
+message CreateJobResponse {
+    string id = 1;
+}
+
+// JobRequest describes the job to be performed
+message JobRequest {
+    string id = 1;
+    repeated Task tasks = 2;
+}
+
+// TaskRequest describes the task to be performed
+message TaskRequest {
+    string job_id = 1;
+    Task task = 2;
+}
+
+// Task describes the operation to be performed
+message Task {
+    string name = 1;
+    oneof action {
+        SleepAction sleep = 2;
+    }
+}
+
+// SleepAction requests a sleep for a number of seconds
+message SleepAction {
+    int32 duration_seconds = 1;
+}
