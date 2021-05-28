@@ -21,7 +21,7 @@ services:
       REDIS_ADDRESS: redis:6379
       PROJECT_ID: development
       FIRESTORE_PROJECT_ID: development
-      FIRESTORE_EMULATOR_HOST: firestore_emulator:8200
+      FIRESTORE_EMULATOR_HOST: firestore:8200
   job-worker:
     depends_on:
       - firestore
@@ -34,7 +34,7 @@ services:
       REDIS_ADDRESS: redis:6379
       PROJECT_ID: development
       FIRESTORE_PROJECT_ID: development
-      FIRESTORE_EMULATOR_HOST: firestore_emulator:8200
+      FIRESTORE_EMULATOR_HOST: firestore:8200
   task-worker:
     depends_on:
       - firestore
@@ -47,4 +47,4 @@ services:
       REDIS_ADDRESS: redis:6379
       PROJECT_ID: development
       FIRESTORE_PROJECT_ID: development
-      FIRESTORE_EMULATOR_HOST: firestore_emulator:8200
+      FIRESTORE_EMULATOR_HOST: firestore:8200

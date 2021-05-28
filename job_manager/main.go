@@ -13,6 +13,7 @@ import (
 	"github.com/smousa/forgerock-scheduler/api"
 	"github.com/smousa/forgerock-scheduler/scheduler"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 const (
@@ -76,7 +77,11 @@ func main() {
 	server := grpc.NewServer()
 	service := scheduler.NewService(store, queue)
 	api.RegisterJobServiceServer(server, service)
-	go server.Serve(lis)
+	reflection.Register(server)
+	go func() {
+		err := server.Serve(lis)
+		log.WithError(err).Error("Server stopped")
+	}()
 	log.Info("Ready!")
 
 	// wait for shutdown
