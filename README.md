@@ -23,7 +23,7 @@ Inserts a job into the queue for execution. Returns the job id.
 {
   "tasks": [
 	  {
-	    "name": "my very complicated task name this field is required."
+	    "name": "my very complicated task name this field is required.",
 	    "sleep": {
 	      "duration_seconds": 1
 	    }
