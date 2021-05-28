@@ -42,13 +42,13 @@ func (w *jobWorker) Consume(ctx context.Context, job *api.JobRequest) {
 			if err != nil {
 				return err
 			}
-			_, err := w.store.WaitForTaskToComplete(ctx, job.Id, task.Name)
+			_, err = w.store.WaitForTaskToComplete(ctx, job.Id, task.Name)
 			return err
 		})
 	}
 
 	err := g.Wait()
 	if err != nil {
-		// TODO: log error
+		ContextLogger(ctx).WithError(err).WithField("job_id", job.Id).Error("Could not execute job.")
 	}
 }

@@ -12,7 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/smousa/forgerock-scheduler/api"
 	"github.com/smousa/forgerock-scheduler/scheduler"
-	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 )
 
@@ -28,7 +27,7 @@ func main() {
 
 	// set up logger
 	log := logrus.StandardLogger()
-	level, err := logrus.ParseLevel(viper.GetString("LOG_LEVEL"))
+	level, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
 	if err != nil {
 		log.WithError(err).Fatal("Could not retrieve log level")
 	}
@@ -37,14 +36,16 @@ func main() {
 	ctx = scheduler.WithLogger(ctx, entry)
 
 	// connect to firestore
-	projectID := viper.GetString("PROJECT_ID")
+	log.Debug("Connecting to firestore")
+	projectID := os.Getenv("FIRESTORE_PROJECT_ID")
 	firestoreClient, err := firestore.NewClient(ctx, projectID)
 	if err != nil {
 		log.WithError(err).WithField("project_id", projectID).Fatal("Could not connect to firestore")
 	}
 
 	// connect to redis
-	redisAddress := viper.GetString("REDIS_ADDRESS")
+	log.Debug("Connecting to redis")
+	redisAddress := os.Getenv("REDIS_ADDRESS")
 	if redisAddress == "" {
 		log.Fatal("Redis address is required")
 	}
@@ -67,6 +68,7 @@ func main() {
 	queue := scheduler.NewRedisJobQueue(jobQueue)
 
 	// set up the server for listening
+	log.Debug("Starting server")
 	lis, err := net.Listen("tcp", ServicePort)
 	if err != nil {
 		log.WithError(err).WithField("port", ServicePort).Fatal("Failed to listen")
@@ -75,6 +77,7 @@ func main() {
 	service := scheduler.NewService(store, queue)
 	api.RegisterJobServiceServer(server, service)
 	go server.Serve(lis)
+	log.Info("Ready!")
 
 	// wait for shutdown
 	sigChan := make(chan os.Signal, 1)

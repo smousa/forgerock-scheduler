@@ -53,9 +53,7 @@ func (w *taskWorker) Consume(ctx context.Context, task *api.TaskRequest) {
 			})
 		}
 	default:
-		// TODO: Add fatal log message
-		// OK, this might happen if your server isn't running the latest version
-		// which means you may just want to FATAL out.
+		ContextLogger(ctx).Fatal("incompatible schema")
 	}
 }
 
@@ -73,7 +71,7 @@ func (exec *taskExecutor) Sleep(ctx context.Context, action *api.SleepAction) er
 	select {
 	case <-t.C:
 		return nil
-	case err := <-ctx.Done():
-		return err
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }

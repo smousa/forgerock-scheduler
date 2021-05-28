@@ -11,7 +11,6 @@ import (
 	"github.com/adjust/rmq/v4"
 	"github.com/sirupsen/logrus"
 	"github.com/smousa/forgerock-scheduler/scheduler"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -26,7 +25,7 @@ func main() {
 
 	// set up logger
 	log := logrus.StandardLogger()
-	level, err := logrus.ParseLevel(viper.GetString("LOG_LEVEL"))
+	level, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
 	if err != nil {
 		log.WithError(err).Fatal("Could not retrieve log level")
 	}
@@ -35,14 +34,16 @@ func main() {
 	ctx = scheduler.WithLogger(ctx, entry)
 
 	// connect to firestore
-	projectID := viper.GetString("PROJECT_ID")
+	log.Debug("Connecting to firestore")
+	projectID := os.Getenv("PROJECT_ID")
 	firestoreClient, err := firestore.NewClient(ctx, projectID)
 	if err != nil {
 		log.WithError(err).WithField("project_id", projectID).Fatal("Could not connect to firestore")
 	}
 
 	// connect to redis
-	redisAddress := viper.GetString("REDIS_ADDRESS")
+	log.Debug("Connecting to redis")
+	redisAddress := os.Getenv("REDIS_ADDRESS")
 	if redisAddress == "" {
 		log.Fatal("Redis address is required")
 	}
@@ -72,15 +73,17 @@ func main() {
 	taskProducer := scheduler.NewRedisTaskQueue(taskQueue)
 
 	// add the consumer and start consuming jobs
+	log.WithField("queue", scheduler.JobQueueName).Debug("Starting consumer")
+	err = jobQueue.StartConsuming(10, time.Second)
+	if err != nil {
+		log.WithError(err).WithField("queue", scheduler.JobQueueName).Fatal("Could not start consumer")
+	}
 	worker := scheduler.NewJobWorker(store, taskProducer)
 	err = jobConsumer.Consume(ctx, worker)
 	if err != nil {
 		log.WithError(err).WithField("queue", scheduler.JobQueueName).Fatal("Could not add consumer")
 	}
-	err = jobQueue.StartConsuming(10, time.Second)
-	if err != nil {
-		log.WithError(err).WithField("queue", scheduler.JobQueueName).Fatal("Could not start consumer")
-	}
+	log.Info("Ready!")
 
 	// wait for shutdown
 	sigChan := make(chan os.Signal, 1)

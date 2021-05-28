@@ -98,16 +98,17 @@ func (s *FirestoreStore) Add(ctx context.Context, job *Job) (string, error) {
 
 // UpdateStatus creates a new status document for a particular job
 func (s *FirestoreStore) UpdateStatus(ctx context.Context, jobID string, status *Status) {
+	log := ContextLogger(ctx).WithField("job_id", jobID)
+
 	_, _, err := s.client.
 		Collection("jobs").
 		Doc(jobID).
 		Collection("status").
 		Add(ctx, status)
 	if err != nil {
-		// TODO: Add fatal log message
-		// This means our communication mechanism is dead, so we should probably
-		// be dead too
+		log.WithError(err).Fatal("Could not update job status")
 	}
+	log.WithField("status", status).Debug("Update job status")
 }
 
 // WaitForTaskToComplete waits for a status document of a particular task to
@@ -121,7 +122,7 @@ func (s *FirestoreStore) WaitForTaskToComplete(ctx context.Context, jobID, taskN
 	iter := s.client.
 		Collection("jobs").Doc(jobID).Collection("status").
 		Where("task_name", "==", taskName).
-		Where("state", "in", []string{"success", "failed"}).
+		Where("state", "in", []string{SuccessState, FailedState}).
 		Snapshots(ctx)
 
 	defer iter.Stop()

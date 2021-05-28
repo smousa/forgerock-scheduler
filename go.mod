@@ -8,8 +8,9 @@ require (
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.3
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.8.1 // indirect
-	github.com/spf13/viper v1.7.1 // indirect
+	github.com/sirupsen/logrus v1.8.1
+	github.com/stretchr/objx v0.1.1 // indirect
+	github.com/stretchr/testify v1.6.1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	google.golang.org/api v0.47.0
 	google.golang.org/grpc v1.38.0

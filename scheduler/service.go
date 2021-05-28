@@ -12,6 +12,7 @@ import (
 )
 
 type service struct {
+	api.UnimplementedJobServiceServer
 	store Store
 	queue JobProducer
 }
